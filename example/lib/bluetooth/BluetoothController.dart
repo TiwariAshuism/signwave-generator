@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -5,65 +7,73 @@ import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class BluetoothController extends GetxController {
-  Future scanDevices() async {
+  Future<bool> checkPermissions() async {
     Map<Permission, PermissionStatus> statuses = await [
-      Permission.location,
+      Permission.locationWhenInUse,
       Permission.bluetoothScan,
+      Permission.bluetoothConnect,
       Permission.bluetoothAdvertise,
-      Permission.bluetoothConnect
     ].request();
 
     await Future.delayed(Duration(seconds: 2));
 
-    if (statuses[Permission.location]!.isDenied &&
+    if (statuses[Permission.locationWhenInUse]!.isDenied &&
         statuses[Permission.bluetoothScan]!.isDenied &&
         statuses[Permission.bluetoothAdvertise]!.isDenied &&
         statuses[Permission.bluetoothConnect]!.isDenied) {
       Fluttertoast.showToast(
         msg: "Please Grant all the Required Permissions",
-        toastLength:
-            Toast.LENGTH_SHORT, // Duration for how long the toast should appear
-        gravity: ToastGravity.BOTTOM, // Position of the toast message
+        toastLength: Toast.LENGTH_SHORT,
+        // Duration for how long the toast should appear
+        gravity: ToastGravity.BOTTOM,
+        // Position of the toast message
         backgroundColor: Colors.black,
         textColor: Colors.white,
       );
 
       Map<Permission, PermissionStatus> statuses = await [
-        Permission.location,
+        Permission.locationWhenInUse,
         Permission.bluetoothScan,
+        Permission.bluetoothConnect,
         Permission.bluetoothAdvertise,
-        Permission.bluetoothConnect
       ].request();
     } //check each permission status after.
 
-    if (statuses[Permission.location]!.isDenied &&
+    if (statuses[Permission.locationWhenInUse]!.isDenied &&
         statuses[Permission.bluetoothScan]!.isDenied &&
         statuses[Permission.bluetoothAdvertise]!.isDenied &&
         statuses[Permission.bluetoothConnect]!.isDenied) {
       Fluttertoast.showToast(
         msg:
-            "The application can't run without the location and bluetooth permission. Kindly go to settings and allow the application for the same.",
-        toastLength:
-            Toast.LENGTH_SHORT, // Duration for how long the toast should appear
-        gravity: ToastGravity.BOTTOM, // Position of the toast message
+        "The application can't run without the location and bluetooth permission. Kindly go to settings and allow the application for the same.",
+        toastLength: Toast.LENGTH_SHORT,
+        // Duration for how long the toast should appear
+        gravity: ToastGravity.BOTTOM,
+        // Position of the toast message
         backgroundColor: Colors.black,
         textColor: Colors.white,
       );
     }
 
-    // Start scanning
-    FlutterBluePlus.startScan(timeout: const Duration(seconds: 5));
+    return statuses.values.map((value) => value.isGranted).contains(false)
+        ? false
+        : true;
+  }
+
+  Future scanDevices() async {
+    final isGranted = Platform.isAndroid ? await checkPermissions() : true;
+    if (isGranted) {
+      await FlutterBluePlus.startScan(timeout: const Duration(seconds: 5));
 
 // Listen to scan results
-    var subscription = FlutterBluePlus.scanResults.listen((results) {
-      // do something with scan results
-      for (ScanResult r in results) {
-        print('${r.device.name} found! rssi: ${r.rssi}');
-      }
-    });
-    print('subscription: $subscription');
-    // Stop scanning
-    FlutterBluePlus.stopScan();
+      var subscription = FlutterBluePlus.scanResults.listen((results) {
+        // do something with scan results
+        for (ScanResult r in results) {
+          print('${r.device.name} found! rssi: ${r.rssi}');
+        }
+      });
+      print('subscription: $subscription');
+    }
   }
 
   // scan result stream
