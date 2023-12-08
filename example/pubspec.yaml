@@ -16,13 +16,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_blue: ^0.8.0
   get: ^4.6.6
   permission_handler: ^11.0.1
   fluttertoast: ^8.2.4
   intl: ^0.18.1
   flutter_svg: ^2.0.9
-  surround_sound: ^0.3.2
   audio_plugin:
     # When depending on this package from a real application you should use:
     #   audio_plugin: ^x.y.z
@@ -35,6 +33,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   lottie: ^2.7.0
+  flutter_blue_plus: ^1.30.3
 
 dev_dependencies:
   integration_test:

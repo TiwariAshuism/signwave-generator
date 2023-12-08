@@ -14,7 +14,6 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
   double frequency = 1.0;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _startAudio();
     WidgetsBinding.instance.addObserver(this);

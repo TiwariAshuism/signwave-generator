@@ -1,13 +1,13 @@
 // ignore_for_file: must_be_immutable
 
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_blue/flutter_blue.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
 
 import '../submission_screen/sub_first.dart';
-
 
 class DutyCycleLightOnly extends StatefulWidget {
   var device;

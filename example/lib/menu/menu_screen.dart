@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:audio_plugin_example/sound/submission_screen/sub_first.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_blue/flutter_blue.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:lottie/lottie.dart';
 
 import '../both/frequency/frequency_screen.dart';
@@ -21,7 +21,6 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-  FlutterBlue flutterBlue = FlutterBlue.instance;
   BluetoothCharacteristic? readC;
   BluetoothCharacteristic? writeC;
   bool isLoading = true;

@@ -1,7 +1,5 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_blue/flutter_blue.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
 
 import '../menu/menu_screen.dart';
@@ -92,15 +90,16 @@ class BluetoothScan extends StatelessWidget {
                                         : device.name),
                                     subtitle: Text(device.id.id),
                                     trailing:
-                                        StreamBuilder<BluetoothDeviceState>(
-                                      stream: device.state,
+                                        StreamBuilder<BluetoothConnectionState>(
+                                      stream: device.connectionState,
                                       initialData:
-                                          BluetoothDeviceState.disconnected,
+                                          BluetoothConnectionState.disconnected,
                                       builder: (context, snapshot) {
                                         final connectionState = snapshot.data;
                                         final isDeviceConnected =
                                             connectionState ==
-                                                BluetoothDeviceState.connected;
+                                                BluetoothConnectionState
+                                                    .connected;
                                         final text = isDeviceConnected
                                             ? 'Disconnect'
                                             : 'Connect';
