@@ -4,7 +4,8 @@ import AVFoundation
 public class AudioPlugin: NSObject, FlutterPlugin {
 
     private var audioEngine: AVAudioEngine?
-    private var playerNode: AVAudioPlayerNode?
+    private var audioPlayerNode: AVAudioPlayerNode?
+    private var isPlaying = false
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "audio_plugin", binaryMessenger: registrar.messenger())
@@ -14,14 +15,12 @@ public class AudioPlugin: NSObject, FlutterPlugin {
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
-        case "getPlatformVersion":
-            result("iOS " + UIDevice.current.systemVersion)
         case "start":
-            if let frequency = call.arguments as? Double {
+            if let arguments = call.arguments as? [String: Any], let frequency = arguments["frequency"] as? Double {
                 startAudio(frequency: frequency)
                 result(nil)
             } else {
-                result(FlutterError(code: "INVALID_ARGUMENT", message: "Frequency argument is missing or invalid", details: nil))
+                result(FlutterError(code: "INVALID_ARGUMENT", message: "Invalid arguments", details: nil))
             }
         case "stop":
             stopAudio()
@@ -32,14 +31,15 @@ public class AudioPlugin: NSObject, FlutterPlugin {
     }
 
     private func startAudio(frequency: Double) {
-        stopAudio()
-
-        audioEngine = AVAudioEngine()
-        playerNode = AVAudioPlayerNode()
-        audioEngine?.attach(playerNode!)
+        if isPlaying {
+            stopAudio()
+        }
 
         let format = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 1)!
-        audioEngine?.connect(playerNode!, to: audioEngine!.mainMixerNode, format: format)
+        audioEngine = AVAudioEngine()
+        audioPlayerNode = AVAudioPlayerNode()
+        audioEngine?.attach(audioPlayerNode!)
+        audioEngine?.connect(audioPlayerNode!, to: audioEngine!.mainMixerNode, format: format)
 
         let sampleRate = 44100
         let period = 1.0 / frequency
@@ -62,20 +62,21 @@ public class AudioPlugin: NSObject, FlutterPlugin {
             }
         }
 
-        playerNode?.scheduleBuffer(buffer, completionHandler: nil)
-        audioEngine?.prepare()
+        audioPlayerNode?.scheduleBuffer(buffer, completionHandler: nil)
 
         do {
             try audioEngine?.start()
-            playerNode?.play()
+            audioPlayerNode?.play()
+            isPlaying = true
         } catch {
             print("Error starting audio engine: \(error.localizedDescription)")
         }
     }
 
     private func stopAudio() {
-        playerNode?.stop()
+        audioPlayerNode?.stop()
         audioEngine?.stop()
         audioEngine?.reset()
+        isPlaying = false
     }
 }
