@@ -37,6 +37,11 @@ public class AudioPlugin: NSObject, FlutterPlugin {
             stopAudio()
         }
 
+        if let engine = audioEngine, engine.isRunning {
+                // Stop the engine if it's already running
+                stopAudio()
+            }
+
         guard let format = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 1) else {
             print("Error creating audio format")
             return
@@ -57,13 +62,14 @@ public class AudioPlugin: NSObject, FlutterPlugin {
             observeBufferState()
         } catch {
             print("Error starting audio engine: \(error.localizedDescription)")
+            stopAudio()
         }
     }
 
     private func generateBuffer(frequency: Double, format: AVAudioFormat) -> AVAudioPCMBuffer? {
         let sampleRate = Int(format.sampleRate)
         let period = 1.0 / frequency
-        let amplitude: Float = 0.5
+        let amplitude: Float = 1.0
         let duration = 1.0
         let numberOfFrames = Int(duration * Double(sampleRate))
 
@@ -105,16 +111,34 @@ public class AudioPlugin: NSObject, FlutterPlugin {
 
     private func stopAudio() {
         do {
+            // Stop the audio player node
             audioPlayerNode?.stop()
+
+            // Stop the audio engine
             audioEngine?.stop()
+
+            // Reset the audio engine
             audioEngine?.reset()
+
+            // Detach the audio player node
+            if let playerNode = audioPlayerNode, let engine = audioEngine {
+                engine.detach(playerNode)
+            }
+
+            // Set properties to false
             isPlaying = false
             isBuffering = false
+
+            // Set optional values to nil
+            audioEngine = nil
+            audioPlayerNode = nil
 
         } catch {
             print("Error stopping audio engine: \(error.localizedDescription)")
         }
     }
+
+
 
 private func observeBufferState() {
     let displayLink = CADisplayLink(target: self, selector: #selector(handleBufferState(_:)))
@@ -142,7 +166,7 @@ private func observeBufferState() {
             // Buffering complete, resume playback
             audioPlayerNode?.scheduleBuffer(buffer, completionHandler: nil)
             audioPlayerNode?.play()
-            print("Playback resumed")
+
         }
     }
 }
